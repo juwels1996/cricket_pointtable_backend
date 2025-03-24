@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'draft_app.urls'
@@ -102,10 +104,16 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:62557",
+]
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
+CORS_ALLOW_ALL_ORIGINS = True
 
 TIME_ZONE = 'UTC'
 
