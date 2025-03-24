@@ -38,6 +38,11 @@ class Coach(models.Model):
 
 
 class Player(models.Model):
+    CATEGORY_CHOICES = [
+        ('Local', 'Local'),
+        ('Semi-Local', 'Semi-Local'),
+        ('Overseas', 'Overseas'),
+    ]
     ROLE_CHOICES = [
         ('Batsman', 'Batsman'),
         ('Bowler', 'Bowler'),
@@ -49,6 +54,7 @@ class Player(models.Model):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="Batsman")
     image_url = models.CharField(max_length=255, null=True, blank=True)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, related_name="players")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='Local')  # New field
     runs = models.IntegerField(default=0)
     matches = models.IntegerField(default=0)
     innings = models.IntegerField(default=0)
@@ -86,39 +92,76 @@ class Match(models.Model):
     team1 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="team1_matches")
     team2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="team2_matches")
     date = models.DateField()
+    time = models.TimeField(null=True, blank=True)
+    stadium = models.CharField(max_length=255, blank=True, default="") 
     winner = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name="won_matches")
-    team1_score = models.IntegerField()
-    team1_overs = models.FloatField(default=0.0)  # ✅ Fixed: Added default=0.0
-    team2_score = models.IntegerField()
-    team2_overs = models.FloatField(default=0.0)  # ✅ Fixed: Added default=0.0
+    team1_score = models.IntegerField(null=True, blank=True)  # Score for team1
+    team1_overs = models.FloatField(default=0.0)
+    team2_score = models.IntegerField(null=True, blank=True)  # Score for team2
+    team2_overs = models.FloatField(default=0.0)
     result = models.CharField(max_length=255, blank=True, default="")
 
+    # New fields to track the winning condition (runs or wickets)
+    win_by_runs = models.IntegerField(null=True, blank=True, default=None)  # If a team wins by runs, store the number of runs.
+    win_by_wickets = models.IntegerField(null=True, blank=True, default=None)  # If a team wins by wickets, store the number of wickets.
+
+    status = models.CharField(max_length=20, choices=[('upcoming', 'Upcoming'), ('finished', 'Finished')], default='upcoming')
+
     def save(self, *args, **kwargs):
-        if self.winner:
-            self.winner.wins += 1
-            loser = self.team1 if self.winner == self.team2 else self.team2
-            loser.losses += 1
-        else:
-            self.team1.ties += 1
-            self.team2.ties += 1
+        if self.status == 'finished':  # Only update winner, loser, and scores if the match is finished
+            if self.winner:
+                self.winner.wins += 1
+                loser = self.team1 if self.winner == self.team2 else self.team2
+                loser.losses += 1
+                if self.win_by_runs:
+                    self.result = f"Won by {self.win_by_runs} runs"
+                elif self.win_by_wickets:
+                    self.result = f"Won by {self.win_by_wickets} wickets"
+            else:
+                self.team1.ties += 1
+                self.team2.ties += 1
 
-        self.team1.matches_played += 1
-        self.team2.matches_played += 1
+            # Update scores and overs for both teams
+            self.team1.total_runs_scored += self.team1_score or 0
+            self.team1.total_overs_faced += self.team1_overs
+            self.team1.total_runs_conceded += self.team2_score or 0
+            self.team1.total_overs_bowled += self.team2_overs
 
-        self.team1.total_runs_scored += self.team1_score
-        self.team1.total_overs_faced += self.team1_overs
-        self.team1.total_runs_conceded += self.team2_score
-        self.team1.total_overs_bowled += self.team2_overs
+            self.team2.total_runs_scored += self.team2_score or 0
+            self.team2.total_overs_faced += self.team2_overs
+            self.team2.total_runs_conceded += self.team1_score or 0
+            self.team2.total_overs_bowled += self.team1_overs
 
-        self.team2.total_runs_scored += self.team2_score
-        self.team2.total_overs_faced += self.team2_overs
-        self.team2.total_runs_conceded += self.team1_score
-        self.team2.total_overs_bowled += self.team1_overs
-
-        self.team1.save()
-        self.team2.save()
+            self.team1.save()
+            self.team2.save()
 
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.team1.name} vs {self.team2.name}"
+
+
+class YouTubeVideo(models.Model):
+    title = models.CharField(max_length=255)
+    video_link = models.URLField()
+    thumbnail_url = models.URLField()  # Thumbnail image URL for carousel
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+    
+class Adviser(models.Model):
+    name = models.CharField(max_length=255)
+    image_url = models.URLField()  # URL to the adviser's image
+    designation = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+    
+class   PDF(models.Model):
+    title = models.CharField(max_length=255)
+    pdf_link = models.URLField()  # PDF URL link
+    upload_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title 
