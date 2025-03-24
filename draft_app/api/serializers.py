@@ -35,14 +35,22 @@ class TeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = '__all__'
 
+
 class MatchSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Match
-        fields = ['id', 'team1_name', 'team2_name', 'date', 'team1_score', 'team1_overs', 'team2_score', 'team2_overs', 'result', 'status']
+    team1_name = serializers.CharField(source='team1.name', read_only=True)
+    team2_name = serializers.CharField(source='team2.name', read_only=True)
+    winner_name = serializers.SerializerMethodField()  # Use SerializerMethodField for winner_name
 
     class Meta:
         model = Match
-        fields = '__all__'
+        fields = ['id', 'team1_name', 'team2_name', 'winner_name', 'date', 'time', 'stadium', 
+                  'team1_score', 'team1_overs', 'team2_score', 'team2_overs', 'result', 'status']
+
+    def get_winner_name(self, obj):
+        # Check if winner exists, if so, return its name, else return None or a default value
+        if obj.winner:
+            return obj.winner.name
+        return None
 
 class YouTubeVideoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -56,5 +64,5 @@ class AdviserSerializer(serializers.ModelSerializer):
 
 class PDFSerializer(serializers.ModelSerializer):
     class Meta:
-        model: PDF
-        fields = ['id', 'title', 'pdf_link', 'upload_date']
+        model = PDF
+        fields = ['id', 'title', 'description', 'pdf_link', 'date']

@@ -4,12 +4,15 @@ from .views import TeamViewSet, MatchViewSet, points_table
 from .views import overall_stats
 from .views import get_youtube_videos
 from .views import AdviserViewSet
+from .views import PDFViewSet
+
 # from .views import PDFViewSet
 
 router = DefaultRouter()
 router.register(r'teams', TeamViewSet)
 router.register(r'matches', MatchViewSet)
 router.register(r'advisers', AdviserViewSet)
+router.register(r'pdfs', PDFViewSet)
 # router.register(r'pdfs', PDFViewSet)  # Registering PDF viewset
 
 urlpatterns = [

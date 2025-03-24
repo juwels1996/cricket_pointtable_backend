@@ -158,10 +158,12 @@ class Adviser(models.Model):
     def __str__(self):
         return self.name
     
-class   PDF(models.Model):
+
+class PDF(models.Model):
     title = models.CharField(max_length=255)
-    pdf_link = models.URLField()  # PDF URL link
-    upload_date = models.DateTimeField(auto_now_add=True)
+    description = models.TextField()  # Ensure this field is included
+    pdf_link = models.URLField()
+    date = models.DateField(blank=True, null=True)
 
     def __str__(self):
-        return self.title 
+        return self.title

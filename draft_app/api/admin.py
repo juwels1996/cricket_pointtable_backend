@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import Team, Player, Match, Owner, Coach
 from .models import YouTubeVideo
 from .models import Adviser
+from .models import PDF
 
 class YouTubeVideoAdmin(admin.ModelAdmin):
     list_display = ('title', 'video_link', 'thumbnail_url', 'created_at')  # Fields to display in the list view
@@ -24,3 +25,4 @@ admin.site.register(Owner)
 admin.site.register(Coach)
 admin.site.register(YouTubeVideo, YouTubeVideoAdmin)
 admin.site.register(Adviser, AdviserAdmin)
+admin.site.register(PDF)

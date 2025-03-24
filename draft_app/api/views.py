@@ -8,6 +8,8 @@ from .models import YouTubeVideo
 from .serializers import YouTubeVideoSerializer
 from .models import Adviser
 from .serializers import AdviserSerializer
+from .serializers import PDFSerializer
+from .models import PDF
 # from .models import PDF
 # from .serializers import PDFSerializer
 
@@ -23,7 +25,7 @@ class PlayerViewSet(viewsets.ModelViewSet):
 
 
 class MatchViewSet(viewsets.ModelViewSet):
-    queryset = Match.objects.all().order_by('date')
+    queryset = Match.objects.all().select_related('team1', 'team2', 'winner')  # Fetch related team names
     serializer_class = MatchSerializer
 
     def get_queryset(self):
@@ -38,10 +40,9 @@ class AdviserViewSet(viewsets.ModelViewSet):
     queryset = Adviser.objects.all()
     serializer_class = AdviserSerializer
 
-# class PDFViewSet(viewsets.ModelViewSet):
-#     queryset = PDF.objects.all()
-#     serializer_class = PDFSerializer
-
+class PDFViewSet(viewsets.ModelViewSet):
+    queryset = PDF.objects.all()
+    serializer_class = PDFSerializer
 
 
 
