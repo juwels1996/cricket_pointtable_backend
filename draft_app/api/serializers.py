@@ -11,7 +11,7 @@ class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
         fields = [
-            'id', 'name', 'image_url', 'category', 'team_name', 'runs', 'matches', 'innings', 
+            'id', 'name', 'role', 'image_url', 'category', 'team_name', 'runs', 'matches', 'innings', 
             'not_outs', 'highest_score', 'average', 'balls_faced', 'strike_rate',
             'hundreds', 'fifties', 'fours', 'sixes'
         ]
