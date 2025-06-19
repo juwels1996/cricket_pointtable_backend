@@ -10,6 +10,10 @@ from .models import Adviser
 from .serializers import AdviserSerializer
 from .serializers import PDFSerializer
 from .models import PDF
+from rest_framework import status
+from .models import PlayerRegistration
+from .serializers import PlayerRegistrationSerializer
+from rest_framework.views import APIView
 # from .models import PDF
 # from .serializers import PDFSerializer
 
@@ -48,9 +52,29 @@ class PDFViewSet(viewsets.ModelViewSet):
 
 @api_view(['GET'])
 def points_table(request):
-   teams = Team.objects.all().order_by('-points', '-net_run_rate')
-   serializer = TeamSerializer(teams, many=True)
-   return Response(serializer.data)
+    teams = Team.objects.all()
+
+    # Dynamically calculate net_run_rate for each team
+    for team in teams:
+        total_runs_scored = team.total_runs_scored
+        total_overs_faced = team.total_overs_faced
+        total_runs_conceded = team.total_runs_conceded
+        total_overs_bowled = team.total_overs_bowled
+
+        # Avoid division by zero
+        if total_overs_faced > 0 and total_overs_bowled > 0:
+            net_run_rate = (total_runs_scored / total_overs_faced) - (total_runs_conceded / total_overs_bowled)
+        else:
+            net_run_rate = 0  # Default to 0 if overs are 0
+
+        # Add the calculated NRR to the team instance (temporarily for the response)
+        team.net_run_rate = net_run_rate
+
+    # Order the teams by points and NRR (calculated dynamically)
+    sorted_teams = sorted(teams, key=lambda t: (t.points, t.net_run_rate), reverse=True)
+    serializer = TeamSerializer(sorted_teams, many=True)
+    return Response(serializer.data)
+
 
 
 # ✅ **Make sure this function exists in views.py**
@@ -77,3 +101,69 @@ def get_matches(request):
     
     serializer = MatchSerializer(matches, many=True)
     return Response(serializer.data)
+
+
+class PlayerRegistrationView(APIView):
+    def post(self, request):
+        serializer = PlayerRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Player registered successfully!"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+# @api_view(['POST'])
+# def register_player(request):
+#     if request.method == 'POST':
+#         # Create the serializer with the incoming data
+#         serializer = PlayerRegistrationSerializer(data=request.data)
+        
+#         # Check if the serializer data is valid
+#         if serializer.is_valid():
+#             # Save the data and return a success response
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+#         # Print the serializer errors for debugging purposes
+#         print(f"Error in registration: {serializer.errors}")
+        
+#         # Handle specific error messages
+#         error_messages = []
+#         for field, errors in serializer.errors.items():
+#             for error in errors:
+#                 error_messages.append(f"Error in {field}: {error}")
+        
+#         # Return the error messages in a readable format
+#         return Response(
+#             {"detail": error_messages},
+#             status=status.HTTP_400_BAD_REQUEST
+#         )
+    
+@api_view(['POST'])
+def register_user(request):
+    if request.method == 'POST':
+        serializer = PlayerRegistrationSerializer(data=request.data)
+
+        if serializer.is_valid():
+            # Save the data
+            serializer.save()
+            # Return the same data back
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            # Return error messages if validation fails
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+# @api_view(['GET'])
+# def get_player_data(request):
+#     players = PlayerRegistration.objects.all()  # Fetch all player data
+#     serializer = PlayerRegistrationSerializer(players, many=True)  # Serialize the data
+#     return Response(serializer.data) 
+
+@api_view(['GET'])
+def get_user_data(request, pk):
+    try:
+        registration = PlayerRegistration.objects.get(id=pk)  # Get the user by ID
+        serializer = PlayerRegistrationSerializer(registration)
+        return Response(serializer.data)
+    except PlayerRegistration.DoesNotExist:
+        return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+

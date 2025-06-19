@@ -4,6 +4,7 @@ from .models import Player
 from .models import YouTubeVideo
 from .models import Adviser
 from .models import PDF
+from .models import PlayerRegistration
 
 class PlayerSerializer(serializers.ModelSerializer):
     team_name = serializers.ReadOnlyField(source="team.name")
@@ -66,3 +67,9 @@ class PDFSerializer(serializers.ModelSerializer):
     class Meta:
         model = PDF
         fields = ['id', 'title', 'description', 'pdf_link', 'date']
+
+class PlayerRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlayerRegistration
+        fields = '__all__'
+

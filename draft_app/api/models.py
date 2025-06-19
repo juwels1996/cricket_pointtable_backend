@@ -93,35 +93,34 @@ class Match(models.Model):
     team2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="team2_matches")
     date = models.DateField()
     time = models.TimeField(null=True, blank=True)
-    stadium = models.CharField(max_length=255, blank=True, default="") 
+    stadium = models.CharField(max_length=255, blank=True, default="")
     winner = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name="won_matches")
     team1_score = models.IntegerField(null=True, blank=True)  # Score for team1
     team1_overs = models.FloatField(default=0.0)
     team2_score = models.IntegerField(null=True, blank=True)  # Score for team2
     team2_overs = models.FloatField(default=0.0)
     result = models.CharField(max_length=255, blank=True, default="")
-
-    # New fields to track the winning condition (runs or wickets)
-    win_by_runs = models.IntegerField(null=True, blank=True, default=None)  # If a team wins by runs, store the number of runs.
-    win_by_wickets = models.IntegerField(null=True, blank=True, default=None)  # If a team wins by wickets, store the number of wickets.
-
+    win_by_runs = models.IntegerField(null=True, blank=True, default=None)
+    win_by_wickets = models.IntegerField(null=True, blank=True, default=None)
     status = models.CharField(max_length=20, choices=[('upcoming', 'Upcoming'), ('finished', 'Finished')], default='upcoming')
 
     def save(self, *args, **kwargs):
-        if self.status == 'finished':  # Only update winner, loser, and scores if the match is finished
+        if self.status == 'finished':  # Only update when the match is finished
             if self.winner:
+                # Update wins, losses, and points
                 self.winner.wins += 1
                 loser = self.team1 if self.winner == self.team2 else self.team2
                 loser.losses += 1
-                if self.win_by_runs:
-                    self.result = f"Won by {self.win_by_runs} runs"
-                elif self.win_by_wickets:
-                    self.result = f"Won by {self.win_by_wickets} wickets"
+                self.winner.points += 2  # Winner gets 2 points
+                self.result = f"Won by {self.win_by_runs if self.win_by_runs else self.win_by_wickets} runs/wickets"
             else:
+                # It's a tie
                 self.team1.ties += 1
                 self.team2.ties += 1
+                self.team1.points += 1
+                self.team2.points += 1
 
-            # Update scores and overs for both teams
+            # Update runs and overs for both teams
             self.team1.total_runs_scored += self.team1_score or 0
             self.team1.total_overs_faced += self.team1_overs
             self.team1.total_runs_conceded += self.team2_score or 0
@@ -132,10 +131,22 @@ class Match(models.Model):
             self.team2.total_runs_conceded += self.team1_score or 0
             self.team2.total_overs_bowled += self.team1_overs
 
+            # Recalculate net run rate
+            self.team1.net_run_rate = self.calculate_net_run_rate(self.team1)
+            self.team2.net_run_rate = self.calculate_net_run_rate(self.team2)
+
+            # Save the updated team data
             self.team1.save()
             self.team2.save()
 
         super().save(*args, **kwargs)
+
+    def calculate_net_run_rate(self, team):
+        """Calculate the net run rate for a team."""
+        if team.total_overs_faced > 0 and team.total_overs_bowled > 0:
+            nrr = (team.total_runs_scored / team.total_overs_faced) - (team.total_runs_conceded / team.total_overs_bowled)
+            return round(nrr, 2)
+        return 0
 
     def __str__(self):
         return f"{self.team1.name} vs {self.team2.name}"
@@ -167,3 +178,36 @@ class PDF(models.Model):
 
     def __str__(self):
         return self.title
+    
+class PlayerRegistration(models.Model):
+    AREA_CHOICES = [
+        ('Local', 'Local'),
+        ('Semi-Local', 'Semi-Local'),
+        ('Overseas', 'Overseas'),
+    ]
+    SPECIALITY_CHOICES = [
+        ('Batsman', 'Batsman'),
+        ('Bowler', 'Bowler'),
+        ('All-Rounder', 'All-Rounder'),
+    ]
+    CATEGORY_CHOICES = [
+        ('A', 'A'),
+        ('B', 'B'),
+        ('C', 'C'),
+    ]
+
+    bkash_number = models.CharField(max_length=20, null=True, blank=True)
+    bkash_transaction_id = models.CharField(max_length=50, null=True, blank=True)
+    name = models.CharField(max_length=100)
+    address = models.TextField()
+    district = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=20)
+    nid_or_birth_certificate_no = models.CharField(max_length=50)
+    date_of_birth = models.DateField()
+    area = models.CharField(max_length=20, choices=AREA_CHOICES)
+    speciality = models.CharField(max_length=20, choices=SPECIALITY_CHOICES)
+    player_category = models.CharField(max_length=1, choices=CATEGORY_CHOICES)
+    player_photo = models.ImageField(upload_to='player_photos/', null=True, blank=True)
+
+    def __str__(self):
+        return self.name
