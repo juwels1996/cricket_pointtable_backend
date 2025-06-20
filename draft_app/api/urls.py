@@ -7,6 +7,9 @@ from .views import AdviserViewSet
 from .views import PDFViewSet
 from .views import PlayerRegistrationView
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 # from .views import PDFViewSet
 
@@ -26,3 +29,6 @@ urlpatterns = [
    path('register_user/', views.register_user, name='register_user'),
     path('get_user_data/<int:pk>/', views.get_user_data, name='get_user_data'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

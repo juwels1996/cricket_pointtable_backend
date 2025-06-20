@@ -14,6 +14,8 @@ from rest_framework import status
 from .models import PlayerRegistration
 from .serializers import PlayerRegistrationSerializer
 from rest_framework.views import APIView
+import base64
+from django.core.files.base import ContentFile
 # from .models import PDF
 # from .serializers import PDFSerializer
 
@@ -141,12 +143,27 @@ class PlayerRegistrationView(APIView):
 @api_view(['POST'])
 def register_user(request):
     if request.method == 'POST':
-        serializer = PlayerRegistrationSerializer(data=request.data)
+        data = request.data.copy()  # Create a mutable copy of the data
+
+        # Check if the player_photo is base64-encoded
+        if 'player_photo' in data:
+            photo_data = data['player_photo']
+            # If it's base64, process it
+            if photo_data.startswith('data:image'):
+                format, imgstr = photo_data.split(';base64,')  # Get rid of the prefix
+                img_data = base64.b64decode(imgstr)  # Decode the base64 image string
+                # Create a file-like object from the decoded image data
+                player_photo = ContentFile(img_data, name='player_photo.jpg')
+                # Replace the player_photo field with the decoded image
+                data['player_photo'] = player_photo
+
+        # Create the serializer and validate the data
+        serializer = PlayerRegistrationSerializer(data=data)
 
         if serializer.is_valid():
             # Save the data
             serializer.save()
-            # Return the same data back
+            # Return the saved data as a response
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             # Return error messages if validation fails
