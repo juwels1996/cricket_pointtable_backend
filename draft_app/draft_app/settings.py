@@ -110,7 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:62557",
 ]
-
+CSRF_TRUSTED_ORIGINS =  ['http://dplt10.org','http://*.127.0.0.1']
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
