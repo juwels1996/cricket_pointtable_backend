@@ -16,6 +16,7 @@ from .serializers import PlayerRegistrationSerializer
 from rest_framework.views import APIView
 import base64
 from django.core.files.base import ContentFile
+from django.http import JsonResponse
 # from .models import PDF
 # from .serializers import PDFSerializer
 
@@ -142,6 +143,12 @@ class PlayerRegistrationView(APIView):
     
 @api_view(['POST'])
 def register_user(request):
+
+    registration_status = PlayerRegistration.objects.first().is_registration_open  # Assuming you have at least one registration object
+    
+    if not registration_status:
+        return JsonResponse({"error": "Registration is closed."}, status=400)
+    
     if request.method == 'POST':
         data = request.data.copy()  # Create a mutable copy of the data
 
