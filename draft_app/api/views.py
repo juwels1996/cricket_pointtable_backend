@@ -10,6 +10,8 @@ from .models import Adviser
 from .serializers import AdviserSerializer
 from .serializers import PDFSerializer
 from .models import PDF
+from .models import Sponsor
+from .serializers import SponsorSerializer
 from rest_framework import status
 from .models import PlayerRegistration
 from .serializers import PlayerRegistrationSerializer
@@ -50,6 +52,10 @@ class AdviserViewSet(viewsets.ModelViewSet):
 class PDFViewSet(viewsets.ModelViewSet):
     queryset = PDF.objects.all()
     serializer_class = PDFSerializer
+
+class SponsorViewSet(viewsets.ModelViewSet):
+    queryset = Sponsor.objects.all()
+    serializer_class = SponsorSerializer
 
 
 

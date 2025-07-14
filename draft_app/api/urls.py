@@ -5,6 +5,7 @@ from .views import overall_stats
 from .views import get_youtube_videos
 from .views import AdviserViewSet
 from .views import PDFViewSet
+from .views import SponsorViewSet
 from .views import PlayerRegistrationView
 from . import views
 from django.conf import settings
@@ -18,6 +19,7 @@ router.register(r'teams', TeamViewSet)
 router.register(r'matches', MatchViewSet)
 router.register(r'advisers', AdviserViewSet)
 router.register(r'pdfs', PDFViewSet)
+router.register(r'sponsor',SponsorViewSet)
 
 # router.register(r'pdfs', PDFViewSet)  # Registering PDF viewset
 

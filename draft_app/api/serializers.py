@@ -4,6 +4,7 @@ from .models import Player
 from .models import YouTubeVideo
 from .models import Adviser
 from .models import PDF
+from .models import Sponsor
 from .models import PlayerRegistration
 
 class PlayerSerializer(serializers.ModelSerializer):
@@ -67,6 +68,11 @@ class PDFSerializer(serializers.ModelSerializer):
     class Meta:
         model = PDF
         fields = ['id', 'title', 'description', 'pdf_link', 'date']
+
+class SponsorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sponsor
+        fields = ['name', 'image']
 
 class PlayerRegistrationSerializer(serializers.ModelSerializer):
     class Meta:

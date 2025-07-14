@@ -3,6 +3,7 @@ from .models import Team, Player, Match, Owner, Coach
 from .models import YouTubeVideo
 from .models import Adviser
 from .models import PDF
+from .models import Sponsor
 from .models import PlayerRegistration
 
 class YouTubeVideoAdmin(admin.ModelAdmin):
@@ -32,5 +33,6 @@ admin.site.register(Coach)
 admin.site.register(YouTubeVideo, YouTubeVideoAdmin)
 admin.site.register(Adviser, AdviserAdmin)
 admin.site.register(PDF)
+admin.site.register(Sponsor)
 admin.site.register(PlayerRegistration, PlayerRegistrationAdmin)
 

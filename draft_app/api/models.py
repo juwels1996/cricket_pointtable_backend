@@ -169,6 +169,10 @@ class Adviser(models.Model):
     def __str__(self):
         return self.name
     
+class Sponsor(models.Model):
+    name = models.CharField(max_length=200)
+    image = models.ImageField(upload_to='banners/')
+    
 
 class PDF(models.Model):
     title = models.CharField(max_length=255)
