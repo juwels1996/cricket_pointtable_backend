@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 class Team(models.Model):
     name = models.CharField(max_length=100)
@@ -14,6 +15,7 @@ class Team(models.Model):
     total_runs_conceded = models.IntegerField(default=0)
     total_overs_bowled = models.FloatField(default=0.0)
     net_run_rate = models.FloatField(default=0.0)
+
 
     def __str__(self):
         return self.name
@@ -182,6 +184,19 @@ class PDF(models.Model):
 
     def __str__(self):
         return self.title
+    
+class MatchPhotoGallery(models.Model):
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="match_photos")
+    photo = models.ImageField(upload_to='match_photos/')
+    description = models.CharField(max_length=255, blank=True, null=True)
+    date = models.DateField(default=timezone.now)  # The date the photo is taken
+    uploaded_at = models.DateTimeField(auto_now_add=True)  # Automatically set when the photo is uploaded
+
+    def __str__(self):
+        return f"Photos for match on {self.date} between {self.match.team1.name} and {self.match.team2.name}"
+
+    class Meta:
+        ordering = ['-date'] 
     
 class PlayerRegistration(models.Model):
     AREA_CHOICES = [

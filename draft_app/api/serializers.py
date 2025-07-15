@@ -6,6 +6,7 @@ from .models import Adviser
 from .models import PDF
 from .models import Sponsor
 from .models import PlayerRegistration
+from .models import MatchPhotoGallery
 
 class PlayerSerializer(serializers.ModelSerializer):
     team_name = serializers.ReadOnlyField(source="team.name")
@@ -78,4 +79,11 @@ class PlayerRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlayerRegistration
         fields = '__all__'
+
+
+class MatchPhotoGallerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MatchPhotoGallery
+        fields = ['id', 'match', 'photo', 'description', 'date', 'uploaded_at']
+        read_only_fields = ['uploaded_at'] 
 

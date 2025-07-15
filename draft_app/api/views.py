@@ -19,6 +19,10 @@ from rest_framework.views import APIView
 import base64
 from django.core.files.base import ContentFile
 from django.http import JsonResponse
+from .models import MatchPhotoGallery
+from .serializers import MatchPhotoGallerySerializer
+from rest_framework.permissions import IsAuthenticated
+
 # from .models import PDF
 # from .serializers import PDFSerializer
 
@@ -197,3 +201,15 @@ def get_user_data(request, pk):
     except PlayerRegistration.DoesNotExist:
         return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
+class MatchPhotoGalleryViewSet(viewsets.ModelViewSet):
+    queryset = MatchPhotoGallery.objects.all()
+    serializer_class = MatchPhotoGallerySerializer
+    # permission_classes = [IsAuthenticated]  # Restrict access to authenticated users
+
+    # Optionally, you can add filtering or searching based on the match date, team, etc.
+    # Example: filtering photos by date or match
+    def get_queryset(self):
+        date = self.request.query_params.get('date', None)
+        if date:
+            return MatchPhotoGallery.objects.filter(date=date)
+        return MatchPhotoGallery.objects.all()

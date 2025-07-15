@@ -5,6 +5,7 @@ from .models import Adviser
 from .models import PDF
 from .models import Sponsor
 from .models import PlayerRegistration
+from .models import Match, MatchPhotoGallery
 
 class YouTubeVideoAdmin(admin.ModelAdmin):
     list_display = ('title', 'video_link', 'thumbnail_url', 'created_at')  # Fields to display in the list view
@@ -23,7 +24,12 @@ class AdviserAdmin(admin.ModelAdmin):
 class PlayerRegistrationAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'phone_number', 'address', 'area', 'speciality', 'player_category', 'player_photo']
     list_filter = ['area', 'player_category', 'speciality']
-    search_fields = ['name', 'phone_number', 'address'] 
+    search_fields = ['name', 'phone_number', 'address']
+
+class MatchPhotoGalleryAdmin(admin.ModelAdmin):
+    list_display = ('match', 'date', 'description', 'uploaded_at')
+    search_fields = ['description', 'match__team1__name', 'match__team2__name']
+    list_filter = ['date'] 
 
 admin.site.register(Team)
 admin.site.register(Player, PlayerAdmin)
@@ -35,4 +41,6 @@ admin.site.register(Adviser, AdviserAdmin)
 admin.site.register(PDF)
 admin.site.register(Sponsor)
 admin.site.register(PlayerRegistration, PlayerRegistrationAdmin)
+admin.site.register(MatchPhotoGallery, MatchPhotoGalleryAdmin)
+
 
