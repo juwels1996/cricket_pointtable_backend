@@ -11,6 +11,8 @@ from .serializers import AdviserSerializer
 from .serializers import PDFSerializer
 from .models import PDF
 from .models import Sponsor
+from .models import Owner
+from .serializers import OwnerSerializer
 from .serializers import SponsorSerializer
 from rest_framework import status
 from .models import PlayerRegistration
@@ -53,6 +55,10 @@ class AdviserViewSet(viewsets.ModelViewSet):
     queryset = Adviser.objects.all()
     serializer_class = AdviserSerializer
 
+class OwnerViewSet(viewsets.ModelViewSet):
+    queryset = Owner.objects.all()
+    serializer_class = OwnerSerializer
+
 class PDFViewSet(viewsets.ModelViewSet):
     queryset = PDF.objects.all()
     serializer_class = PDFSerializer
@@ -60,6 +66,14 @@ class PDFViewSet(viewsets.ModelViewSet):
 class SponsorViewSet(viewsets.ModelViewSet):
     queryset = Sponsor.objects.all()
     serializer_class = SponsorSerializer
+
+    def list(self, request):
+        grouped = {}
+        for category_key, category_label in Sponsor.CATEGORY_CHOICES:
+            sponsors = Sponsor.objects.filter(category=category_key)
+            serializer = SponsorSerializer(sponsors, many=True, context={'request': request})
+            grouped[category_label] = serializer.data
+        return Response(grouped)
 
 
 

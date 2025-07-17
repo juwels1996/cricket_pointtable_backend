@@ -5,6 +5,7 @@ from .views import overall_stats
 from .views import get_youtube_videos
 from .views import AdviserViewSet
 from .views import PDFViewSet
+from .views import OwnerViewSet
 from .views import SponsorViewSet
 from .views import MatchPhotoGalleryViewSet
 from .views import PlayerRegistrationView
@@ -20,8 +21,9 @@ router.register(r'teams', TeamViewSet)
 router.register(r'matches', MatchViewSet)
 router.register(r'advisers', AdviserViewSet)
 router.register(r'pdfs', PDFViewSet)
-router.register(r'sponsor',SponsorViewSet)
+router.register(r'sponsor', SponsorViewSet, basename='sponsor')
 router.register(r'matchgallery',MatchPhotoGalleryViewSet)
+router.register(r'owner',OwnerViewSet)
 
 # router.register(r'pdfs', PDFViewSet)  # Registering PDF viewset
 

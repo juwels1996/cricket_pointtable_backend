@@ -23,6 +23,7 @@ class Team(models.Model):
 
 class Owner(models.Model):
     name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True) 
     image_url = models.CharField(max_length=255, null=True, blank=True)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="owners")
 
@@ -172,8 +173,19 @@ class Adviser(models.Model):
         return self.name
     
 class Sponsor(models.Model):
+    CATEGORY_CHOICES = [
+        ('media', 'Media Sponsor'),
+        ('co', 'Co-sponsor'),
+        ('main', 'Main Sponsor'),
+        # Add more as needed
+    ]
+
     name = models.CharField(max_length=200)
     image = models.ImageField(upload_to='banners/')
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+
+    def __str__(self):
+        return f"{self.name} ({self.get_category_display()})"
     
 
 class PDF(models.Model):

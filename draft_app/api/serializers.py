@@ -65,6 +65,11 @@ class AdviserSerializer(serializers.ModelSerializer):
         model = Adviser
         fields = ['id', 'name', 'image_url', 'designation']
 
+class OwnerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Owner
+        fields = '__all__'
+
 class PDFSerializer(serializers.ModelSerializer):
     class Meta:
         model = PDF
@@ -73,7 +78,7 @@ class PDFSerializer(serializers.ModelSerializer):
 class SponsorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sponsor
-        fields = ['name', 'image']
+        fields = ['name', 'image', 'category']
 
 class PlayerRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
