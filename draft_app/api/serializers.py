@@ -4,6 +4,7 @@ from .models import Player
 from .models import YouTubeVideo
 from .models import Adviser
 from .models import PDF
+from .models import Event
 from .models import Sponsor
 from .models import PlayerRegistration
 from .models import MatchPhotoGallery
@@ -76,9 +77,26 @@ class PDFSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'pdf_link', 'date']
 
 class SponsorSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    image = serializers.SerializerMethodField()
+    category_label = serializers.SerializerMethodField()
+
     class Meta:
         model = Sponsor
-        fields = ['name', 'image', 'category']
+        fields = ['id', 'name', 'image', 'category', 'category_label', 'position']
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image and hasattr(obj.image, 'url'):
+            url = obj.image.url
+            # Build absolute URL (https-safe for your frontend)
+            if request is not None:
+                return request.build_absolute_uri(url).replace('http://', 'https://')
+            return url
+        return None
+
+    def get_category_label(self, obj):
+        return dict(Sponsor.CATEGORY_CHOICES).get(obj.category, obj.category)
 
 class PlayerRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -90,5 +108,10 @@ class MatchPhotoGallerySerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchPhotoGallery
         fields = ['id', 'match', 'photo', 'description', 'date', 'uploaded_at']
-        read_only_fields = ['uploaded_at'] 
+        read_only_fields = ['uploaded_at']
+
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = ['id', 'title', 'image', 'date'] 
 

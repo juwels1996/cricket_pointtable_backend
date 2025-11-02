@@ -172,20 +172,31 @@ class Adviser(models.Model):
     def __str__(self):
         return self.name
     
+
 class Sponsor(models.Model):
     CATEGORY_CHOICES = [
         ('media', 'Media Sponsor'),
         ('co', 'Co-sponsor'),
         ('main', 'Main Sponsor'),
-        # Add more as needed
     ]
 
     name = models.CharField(max_length=200)
-    image = models.ImageField(upload_to='banners/')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    position = models.PositiveIntegerField(default=0, db_index=True)
+
+    class Meta:
+        ordering = ['category', 'position', 'id']
 
     def __str__(self):
         return f"{self.name} ({self.get_category_display()})"
+
+
+class SponsorImage(models.Model):
+    sponsor = models.ForeignKey(Sponsor, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='banners/')
+
+    def __str__(self):
+        return f"Image for {self.sponsor.name}"
     
 
 class PDF(models.Model):
@@ -243,3 +254,15 @@ class PlayerRegistration(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class Event(models.Model):
+    title = models.CharField(max_length=200)
+    image = models.ImageField(upload_to='events/')
+    date = models.DateField(default=timezone.now)
+
+    class Meta:
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.title} ({self.date})"

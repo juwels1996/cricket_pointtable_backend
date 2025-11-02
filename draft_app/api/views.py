@@ -24,6 +24,10 @@ from django.http import JsonResponse
 from .models import MatchPhotoGallery
 from .serializers import MatchPhotoGallerySerializer
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework import generics
+from .models import Event
+from .serializers import EventSerializer
 
 # from .models import PDF
 # from .serializers import PDFSerializer
@@ -67,12 +71,26 @@ class SponsorViewSet(viewsets.ModelViewSet):
     queryset = Sponsor.objects.all()
     serializer_class = SponsorSerializer
 
-    def list(self, request):
+    # GET /api/sponsors/?category=main   -> flat list filtered
+    # GET /api/sponsors/                 -> flat list (all) with ordering
+    def list(self, request, *args, **kwargs):
+        category = request.query_params.get('category')
+        qs = self.get_queryset()
+        if category:
+            qs = qs.filter(category=category)
+
+        serializer = self.get_serializer(qs, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    # GET /api/sponsors/grouped/         -> grouped by category label
+    @action(detail=False, methods=['get'])
+    def grouped(self, request):
         grouped = {}
-        for category_key, category_label in Sponsor.CATEGORY_CHOICES:
-            sponsors = Sponsor.objects.filter(category=category_key)
-            serializer = SponsorSerializer(sponsors, many=True, context={'request': request})
-            grouped[category_label] = serializer.data
+        # Ensure we respect model ordering inside each category
+        for key, label in Sponsor.CATEGORY_CHOICES:
+            sponsors = Sponsor.objects.filter(category=key).order_by('position', 'id')
+            serializer = self.get_serializer(sponsors, many=True, context={'request': request})
+            grouped[label] = serializer.data
         return Response(grouped)
 
 
@@ -227,3 +245,7 @@ class MatchPhotoGalleryViewSet(viewsets.ModelViewSet):
         if date:
             return MatchPhotoGallery.objects.filter(date=date)
         return MatchPhotoGallery.objects.all()
+    
+class EventViewSet(viewsets.ModelViewSet):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer

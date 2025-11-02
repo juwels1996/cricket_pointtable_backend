@@ -12,6 +12,7 @@ from .views import PlayerRegistrationView
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import EventViewSet
 
 
 # from .views import PDFViewSet
@@ -24,6 +25,7 @@ router.register(r'pdfs', PDFViewSet)
 router.register(r'sponsor', SponsorViewSet, basename='sponsor')
 router.register(r'matchgallery',MatchPhotoGalleryViewSet)
 router.register(r'owner',OwnerViewSet)
+router.register(r'events', EventViewSet, basename='event')
 
 # router.register(r'pdfs', PDFViewSet)  # Registering PDF viewset
 
