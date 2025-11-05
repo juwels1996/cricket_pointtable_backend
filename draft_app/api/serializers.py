@@ -78,22 +78,24 @@ class PDFSerializer(serializers.ModelSerializer):
 
 class SponsorSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    image = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
     category_label = serializers.SerializerMethodField()
 
     class Meta:
         model = Sponsor
-        fields = ['id', 'name', 'image', 'category', 'category_label', 'position']
+        fields = ['id', 'name', 'images', 'category', 'category_label', 'position']
 
-    def get_image(self, obj):
+    def get_images(self, obj):
         request = self.context.get('request')
-        if obj.image and hasattr(obj.image, 'url'):
-            url = obj.image.url
-            # Build absolute URL (https-safe for your frontend)
-            if request is not None:
-                return request.build_absolute_uri(url).replace('http://', 'https://')
-            return url
-        return None
+        image_urls = []
+        for img in obj.images.all():
+            if img.image and hasattr(img.image, 'url'):
+                url = img.image.url
+                # Build absolute HTTPS-safe URL
+                if request is not None:
+                    url = request.build_absolute_uri(url).replace('http://', 'https://')
+                image_urls.append(url)
+        return image_urls
 
     def get_category_label(self, obj):
         return dict(Sponsor.CATEGORY_CHOICES).get(obj.category, obj.category)

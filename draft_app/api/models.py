@@ -183,12 +183,14 @@ class Sponsor(models.Model):
     name = models.CharField(max_length=200)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     position = models.PositiveIntegerField(default=0, db_index=True)
+    image = models.ManyToManyField('SponsorImage',related_name="sponsor_related_image", blank=True)
 
     class Meta:
         ordering = ['category', 'position', 'id']
 
     def __str__(self):
         return f"{self.name} ({self.get_category_display()})"
+    
 
 
 class SponsorImage(models.Model):

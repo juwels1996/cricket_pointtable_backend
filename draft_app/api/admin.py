@@ -7,6 +7,7 @@ from .models import Sponsor
 from .models import PlayerRegistration
 from .models import Match, MatchPhotoGallery
 from .models import Event
+from .models import SponsorImage
 
 class YouTubeVideoAdmin(admin.ModelAdmin):
     list_display = ('title', 'video_link', 'thumbnail_url', 'created_at')  # Fields to display in the list view
@@ -32,11 +33,18 @@ class MatchPhotoGalleryAdmin(admin.ModelAdmin):
     search_fields = ['description', 'match__team1__name', 'match__team2__name']
     list_filter = ['date'] 
 
+
+class SponsorImageInline(admin.TabularInline):
+    model = SponsorImage
+    extra = 1 
+
 class SponsorAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'position', 'created_at')
-    list_filter = ('category',)
+    list_display = ('name', 'category', 'position')
     search_fields = ('name',)
-    ordering = ('category', 'position', 'id')
+    inlines = [SponsorImageInline]
+
+admin.site.register(Sponsor, SponsorAdmin)
+admin.site.register(SponsorImage)
 
 class EventAdmin(admin.ModelAdmin):
     list_display = ('title', 'date' )
@@ -52,7 +60,7 @@ admin.site.register(Coach)
 admin.site.register(YouTubeVideo, YouTubeVideoAdmin)
 admin.site.register(Adviser, AdviserAdmin)
 admin.site.register(PDF)
-admin.site.register(Sponsor)
+# admin.site.register(Sponsor)
 admin.site.register(Event, EventAdmin)
 admin.site.register(PlayerRegistration, PlayerRegistrationAdmin)
 admin.site.register(MatchPhotoGallery, MatchPhotoGalleryAdmin)
