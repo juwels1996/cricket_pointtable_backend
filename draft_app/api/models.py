@@ -274,3 +274,10 @@ class TestCheck(models.Model):
 
     def __str__(self):
         return self.name
+    
+    
+class AnotherTestModel(models.Model):
+    description = models.TextField()
+
+    def __str__(self):
+        return self.description[:50]  # Return first 50 characters of description
