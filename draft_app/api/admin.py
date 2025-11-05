@@ -43,8 +43,7 @@ class SponsorAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     inlines = [SponsorImageInline]
 
-admin.site.register(Sponsor, SponsorAdmin)
-admin.site.register(SponsorImage)
+
 
 class EventAdmin(admin.ModelAdmin):
     list_display = ('title', 'date' )
@@ -60,7 +59,8 @@ admin.site.register(Coach)
 admin.site.register(YouTubeVideo, YouTubeVideoAdmin)
 admin.site.register(Adviser, AdviserAdmin)
 admin.site.register(PDF)
-# admin.site.register(Sponsor)
+admin.site.register(Sponsor, SponsorAdmin)
+admin.site.register(SponsorImage)
 admin.site.register(Event, EventAdmin)
 admin.site.register(PlayerRegistration, PlayerRegistrationAdmin)
 admin.site.register(MatchPhotoGallery, MatchPhotoGalleryAdmin)
