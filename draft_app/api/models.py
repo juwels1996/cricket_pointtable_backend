@@ -268,3 +268,9 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.date})"
+    
+class TestCheck(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
