@@ -98,62 +98,124 @@ class Match(models.Model):
     time = models.TimeField(null=True, blank=True)
     stadium = models.CharField(max_length=255, blank=True, default="")
     winner = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name="won_matches")
-    team1_score = models.IntegerField(null=True, blank=True)  # Score for team1
+
+    team1_score = models.IntegerField(null=True, blank=True)
     team1_overs = models.FloatField(default=0.0)
-    team2_score = models.IntegerField(null=True, blank=True)  # Score for team2
+    team2_score = models.IntegerField(null=True, blank=True)
     team2_overs = models.FloatField(default=0.0)
+
     result = models.CharField(max_length=255, blank=True, default="")
-    win_by_runs = models.IntegerField(null=True, blank=True, default=None)
-    win_by_wickets = models.IntegerField(null=True, blank=True, default=None)
-    status = models.CharField(max_length=20, choices=[('upcoming', 'Upcoming'), ('finished', 'Finished')], default='upcoming')
+    win_by_runs = models.IntegerField(null=True, blank=True)
+    win_by_wickets = models.IntegerField(null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        if self.status == 'finished':  # Only update when the match is finished
-            if self.winner:
-                # Update wins, losses, and points
-                self.winner.wins += 1
-                loser = self.team1 if self.winner == self.team2 else self.team2
-                loser.losses += 1
-                self.winner.points += 2  # Winner gets 2 points
-                self.result = f"Won by {self.win_by_runs if self.win_by_runs else self.win_by_wickets} runs/wickets"
-            else:
-                # It's a tie
-                self.team1.ties += 1
-                self.team2.ties += 1
-                self.team1.points += 1
-                self.team2.points += 1
-
-            # Update runs and overs for both teams
-            self.team1.total_runs_scored += self.team1_score or 0
-            self.team1.total_overs_faced += self.team1_overs
-            self.team1.total_runs_conceded += self.team2_score or 0
-            self.team1.total_overs_bowled += self.team2_overs
-
-            self.team2.total_runs_scored += self.team2_score or 0
-            self.team2.total_overs_faced += self.team2_overs
-            self.team2.total_runs_conceded += self.team1_score or 0
-            self.team2.total_overs_bowled += self.team1_overs
-
-            # Recalculate net run rate
-            self.team1.net_run_rate = self.calculate_net_run_rate(self.team1)
-            self.team2.net_run_rate = self.calculate_net_run_rate(self.team2)
-
-            # Save the updated team data
-            self.team1.save()
-            self.team2.save()
-
-        super().save(*args, **kwargs)
-
-    def calculate_net_run_rate(self, team):
-        """Calculate the net run rate for a team."""
-        if team.total_overs_faced > 0 and team.total_overs_bowled > 0:
-            nrr = (team.total_runs_scored / team.total_overs_faced) - (team.total_runs_conceded / team.total_overs_bowled)
-            return round(nrr, 2)
-        return 0
+    status = models.CharField(
+        max_length=20, 
+        choices=[('upcoming', 'Upcoming'), ('finished', 'Finished')], 
+        default='upcoming'
+    )
 
     def __str__(self):
         return f"{self.team1.name} vs {self.team2.name}"
 
+
+# class Match(models.Model):
+#     team1 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="team1_matches")
+#     team2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="team2_matches")
+#     date = models.DateField()
+#     time = models.TimeField(null=True, blank=True)
+#     stadium = models.CharField(max_length=255, blank=True, default="")
+#     winner = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name="won_matches")
+#     team1_score = models.IntegerField(null=True, blank=True)
+#     team1_overs = models.FloatField(default=0.0)
+#     team2_score = models.IntegerField(null=True, blank=True)
+#     team2_overs = models.FloatField(default=0.0)
+#     result = models.CharField(max_length=255, blank=True, default="")
+#     win_by_runs = models.IntegerField(null=True, blank=True)
+#     win_by_wickets = models.IntegerField(null=True, blank=True)
+#     status = models.CharField(max_length=20, choices=[('upcoming', 'Upcoming'), ('finished', 'Finished')], default='upcoming')
+
+#     def save(self, *args, **kwargs):
+
+#         # --- Only apply logic when marking a match as finished ---
+#         apply_result = False
+#         if self.pk:
+#             # Existing match → check previous state
+#             prev = Match.objects.filter(pk=self.pk).first()
+#             if prev and prev.status != "finished" and self.status == "finished":
+#                 apply_result = True
+#         else:
+#             # New match being created and already finished
+#             if self.status == "finished":
+#                 apply_result = True
+
+#         if apply_result:
+#             self.apply_match_result()
+        
+#         print(apply_result, " - Apply match result logic")
+
+#         super().save(*args, **kwargs)
+
+#     # ---------------- HELPERS ---------------- #
+
+#     def apply_match_result(self):
+#         """Apply match result once when match is marked finished."""
+
+#         # Fetch fresh DB copies (VERY IMPORTANT)
+#         team1 = Team.objects.select_for_update().get(pk=self.team1_id)
+#         team2 = Team.objects.select_for_update().get(pk=self.team2_id)
+
+#         # Handle Winner / Tie
+#         if self.winner:
+#             print("Winner found:", self.winner)
+
+#             winner = Team.objects.select_for_update().get(pk=self.winner_id)
+#             loser = team2 if winner == team1 else team1
+
+#             winner.wins += 1
+#             winner.points += 2
+#             loser.losses += 1
+
+#             margin = self.win_by_runs or self.win_by_wickets
+#             self.result = f"Won by {margin} runs/wickets"
+
+#         else:
+#             # Match Tied
+#             team1.ties += 1
+#             team2.ties += 1
+#             team1.points += 1
+#             team2.points += 1
+
+#         # Update Stats
+#         self.update_team_stats(team1, self.team1_score, self.team1_overs, self.team2_score, self.team2_overs)
+#         self.update_team_stats(team2, self.team2_score, self.team2_overs, self.team1_score, self.team1_overs)
+
+#         # Calculate NRR
+#         team1.net_run_rate = self.calculate_net_run_rate(team1)
+#         team2.net_run_rate = self.calculate_net_run_rate(team2)
+
+#         team1.save()
+#         team2.save()
+
+
+#     def update_team_stats(self, team, runs_scored, overs_faced, runs_conceded, overs_bowled):
+#         """Updates runs and overs stats of a team."""
+#         team.total_runs_scored += runs_scored or 0
+#         team.total_overs_faced += overs_faced or 0
+#         team.total_runs_conceded += runs_conceded or 0
+#         team.total_overs_bowled += overs_bowled or 0
+
+#     def calculate_net_run_rate(self, team):
+#         """Calculate the net run rate for a team."""
+#         if team.total_overs_faced > 0 and team.total_overs_bowled > 0:
+#             return round(
+#                 (team.total_runs_scored / team.total_overs_faced) -
+#                 (team.total_runs_conceded / team.total_overs_bowled),
+#                 2
+#             )
+#         return 0
+
+#     def __str__(self):
+#         return f"{self.team1.name} vs {self.team2.name}"
 
 class YouTubeVideo(models.Model):
     title = models.CharField(max_length=255)
